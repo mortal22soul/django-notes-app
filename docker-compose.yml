@@ -1,5 +1,5 @@
 services :
   web :
-     image : aryanmehesare/my-note-app:latest
+     image : aryanmehesare/notes-app:latest
      ports :
          - "8000:8000"
