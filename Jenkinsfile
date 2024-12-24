@@ -1,28 +1,44 @@
-pipeline {
-    agent any
+pipeline{
+    agent {label "vinod"}
+    
     stages{
-        stage("Clone Code"){
+        stage("code"){
             steps{
-                git url: "https://github.com/LondheShubham153/django-notes-app.git", branch: "main"
+                echo "this is cloning the code"
+                git branch: 'dev', url: 'https://github.com/LondheShubham153/django-notes-app.git'
+                echo "code cloned"
             }
         }
-        stage("Build and Test"){
+        stage("build"){
             steps{
-                sh "docker build . -t note-app-test-new"
+                echo "this is building the code"
+                sh "docker build -t notes-app:latest ."
+                echo "build completed"
             }
         }
-        stage("Push to Docker Hub"){
+        stage("pushing"){
             steps{
-                withCredentials([usernamePassword(credentialsId:"dockerHub",passwordVariable:"dockerHubPass",usernameVariable:"dockerHubUser")]){
-                sh "docker tag note-app-test-new ${env.dockerHubUser}/note-app-test-new:latest"
-                sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
-                sh "docker push ${env.dockerHubUser}/note-app-test-new:latest"
+                echo "this is pushing image to docker hub"
+                withCredentials([usernamePassword(
+                    "credentialsId":"dockerhubcred", 
+                    passwordVariable:"dockerHubPass", 
+                    usernameVariable:"dockerHubUser")]){
+                    sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
+                    sh "docker image tag notes-app:latest ${env.dockerHubUser}/notes-app:latest"
+                    sh "docker push ${env.dockerHubUser}/notes-app:latest"
                 }
             }
         }
-        stage("Deploy"){
+        stage("test"){
             steps{
+                echo "this is testing the code"
+            }
+        }
+        stage("deploy"){
+            steps{
+                echo "this is deploying the code"
                 sh "docker-compose down && docker-compose up -d"
+                echo "app deployed on port 8000"
             }
         }
     }
